@@ -1,0 +1,16 @@
+{
+  "name": "bluebot",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "https://github.com/blacknred/bluebot.git",
+  "author": "blcknrd <tretyakov.dmi@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "nodemon": "^1.18.9",
+    "telegraf": "^3.27.0"
+  },
+  "scripts": {
+    "start": "nodemon"
+  }
+}
