@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 const Telegraf = require('telegraf');
+const mddlwr = require('./middleware');
 const HttpsProxyAgent = require('https-proxy-agent');
 
 dotenv.config();
@@ -12,13 +13,13 @@ const IS_DEV = process.env.NODE_ENV !== 'production';
 const bot = new Telegraf(TOKEN, {
     telegram: {
         agent: IS_DEV ? new HttpsProxyAgent(process.env.HTTP_PROXY) : null,
-        webhookReply: true,
+        webhookReply: false, // true
     },
     username: 'bloobot',
 });
 
 // inject
-require('./middleware')(bot);
+mddlwr(bot);
 
 // run
 setImmediate(async () => {
