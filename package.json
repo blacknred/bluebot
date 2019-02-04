@@ -6,7 +6,11 @@
   "author": "blcknrd <tretyakov.dmi@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "9gag": "^2.0.1",
+    "@icyflame/node-9gag": "^0.2.3",
+    "@vitalets/google-translate-api": "^2.5.0",
     "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
     "dotenv": "^6.2.0",
     "eslint": "^5.13.0",
     "https-proxy-agent": "^2.2.1",
