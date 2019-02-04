@@ -70,9 +70,16 @@ module.exports = (bot) => {
     bot.command('adv', replyWithTranslation, ctx => getAdvice(ctx.message.text));
     bot.command('horo', replyWithTranslation, ctx => getHoroscope(ctx.message.text));
     bot.command('pol', withAsyncResponse, async(ctx) => ctx.reply(await getPol()));
-    bot.command('should', withAsyncResponse, async(ctx) => ctx.telegram.sendAnimation({
-        animation: await getYesNo(),
-    }));
+    bot.command('should', withAsyncResponse, async(ctx) => {
+        // const { isGif, data } = await getYesNo();
+        // if (!isGif) return ctx.reply(text);
+        ctx.telegram.sendAnimation({
+            animation: 'https://yesno.wtf/assets/yes/12-e4f57c8f172c51fdd983c2837349f853.gif',
+        });
+        ctx.replyWithVideo({
+            source: 'https://yesno.wtf/assets/yes/12-e4f57c8f172c51fdd983c2837349f853.gif',
+        });
+    });
     
     bot.on('sticker', ctx => ctx.reply(ANSWERS.weird));
     bot.hears(/(hi|Hi|hello|Hello)+/, ctx => ctx.reply(ANSWERS.hi));

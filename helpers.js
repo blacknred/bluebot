@@ -80,9 +80,17 @@ async function getRandVideo() {
 async function getYesNo() {
     try {
         const res = await axios.get(YESNO_URL);
-        return res.data.image || res.data.answer;
+
+        if (res.data.image) throw new Error();
+        return {
+            isGif: true,
+            data: res.data.image,
+        };
     } catch (e) {
-        return ['No', 'Yes', 'Maybe..'][Math.floor(Math.random() * 3)];
+        return {
+            isGif: false,
+            data: ['No', 'Yes', 'Maybe..'][Math.floor(Math.random() * 3)],
+        };
     }
 }
 
@@ -92,7 +100,7 @@ async function getAdvice(text) {
     try {
         const res = await axios.get(`${ADVICE_URL}${query ? `/search/${query}` : ''}`);
     
-        if (!res || res.data.message) throw new Error();
+        if (res.data.message) throw new Error();
         if (!query) return res.data.slip.advice;
         const randIndex = Math.floor(Math.random() * res.data.slips.length);
         return res.data.slips[randIndex].advice;
