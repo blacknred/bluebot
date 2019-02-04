@@ -82,9 +82,13 @@ async function getYesNo() {
         const res = await axios.get(YESNO_URL);
 
         if (res.data.image) throw new Error();
+        const data = await axios({
+            url: res.data.image,
+            responseType: 'stream'
+        });
         return {
             isGif: true,
-            data: res.data.image,
+            data: data.data,
         };
     } catch (e) {
         return {

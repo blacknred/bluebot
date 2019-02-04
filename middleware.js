@@ -33,7 +33,7 @@ async function withAsyncResponse(ctx, next) {
     } finally {
         clearTimeout(pre1);
         clearTimeout(pre2);
-        ctx.reply(ANSWERS.done);
+        // ctx.reply(ANSWERS.done);
     }
 }
 
@@ -71,13 +71,10 @@ module.exports = (bot) => {
     bot.command('horo', replyWithTranslation, ctx => getHoroscope(ctx.message.text));
     bot.command('pol', withAsyncResponse, async(ctx) => ctx.reply(await getPol()));
     bot.command('should', withAsyncResponse, async(ctx) => {
-        // const { isGif, data } = await getYesNo();
-        // if (!isGif) return ctx.reply(text);
-        ctx.telegram.sendAnimation({
-            animation: 'https://yesno.wtf/assets/yes/12-e4f57c8f172c51fdd983c2837349f853.gif',
-        });
-        ctx.replyWithVideo({
-            source: 'https://yesno.wtf/assets/yes/12-e4f57c8f172c51fdd983c2837349f853.gif',
+        const { isGif, data } = await getYesNo();
+        if (!isGif) return ctx.reply(data);
+        return ctx.replyWithVideo({
+            source: data,
         });
     });
     
