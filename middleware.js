@@ -70,8 +70,8 @@ module.exports = (bot) => {
     bot.command('adv', replyWithTranslation, ctx => getAdvice(ctx.message.text));
     bot.command('horo', replyWithTranslation, ctx => getHoroscope(ctx.message.text));
     bot.command('pol', withAsyncResponse, async(ctx) => ctx.reply(await getPol()));
-    bot.command('should', withAsyncResponse, async(ctx) => ctx.replyWithPhoto({
-        url: await getYesNo(),
+    bot.command('should', withAsyncResponse, async(ctx) => ctx.telegram.sendAnimation({
+        animation: await getYesNo(),
     }));
     
     bot.on('sticker', ctx => ctx.reply(ANSWERS.weird));
