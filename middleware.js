@@ -2,13 +2,12 @@
 const translate = require('@vitalets/google-translate-api');
 
 const {
+    getPol,
     getJoke,
     getYesNo,
+    getMemes,
     getAdvice,
-    getPol,
     getRandSong,
-    getRandVideo,
-    getRandMeme,
     getHoroscope,
 } = require('./helpers');
 
@@ -18,14 +17,16 @@ const ANSWERS = {
     help: 'Just random content buddy. Command.',
     weird: '👍 but I\'m waiting for the command.',
     heavy: 'Heavy calculations...',
+    hope: 'I hope it`s worth it.',
     wait: 'Wait...',
     error: 'Hmm...',
     done: 'Done.',
 };
 
 async function withAsyncResponse(ctx, next) {
-    const pre1 = setTimeout(() => ctx.reply(ANSWERS.wait), 500);
-    const pre2 = setTimeout(() => ctx.reply(ANSWERS.heavy), 6000);
+    const pre1 = setTimeout(() => ctx.reply(ANSWERS.wait), 1000);
+    const pre2 = setTimeout(() => ctx.reply(ANSWERS.heavy), 7000);
+    const pre3 = setTimeout(() => ctx.reply(ANSWERS.heavy), 12000);
     try {
         await next(ctx);
     } catch (e) {
@@ -33,7 +34,7 @@ async function withAsyncResponse(ctx, next) {
     } finally {
         clearTimeout(pre1);
         clearTimeout(pre2);
-        // ctx.reply(ANSWERS.done);
+        clearTimeout(pre3);
     }
 }
 
@@ -57,19 +58,9 @@ module.exports = (bot) => {
     bot.start(ctx => ctx.reply(ANSWERS.welcome));
     bot.help(ctx => ctx.reply(ANSWERS.help));
 
-    bot.command('mus', withAsyncResponse, async (ctx) => ctx.replyWithVoice({
-        source: await getRandSong(),
-    }));
-    bot.command('vid', withAsyncResponse, async (ctx) => ctx.replyWithVideo({
-        source: await getRandVideo(),
-    }));
-    bot.command('meme', withAsyncResponse, async (ctx) => ctx.replyWithPhoto({
-        url: await getRandMeme(),
-    }));
     bot.command('dad', replyWithTranslation, ctx => getJoke(ctx.message.text));
     bot.command('adv', replyWithTranslation, ctx => getAdvice(ctx.message.text));
     bot.command('horo', replyWithTranslation, ctx => getHoroscope(ctx.message.text));
-    bot.command('pol', withAsyncResponse, async(ctx) => ctx.reply(await getPol()));
     bot.command('should', withAsyncResponse, async(ctx) => {
         const { isGif, data } = await getYesNo();
         if (!isGif) return ctx.reply(data);
@@ -77,7 +68,26 @@ module.exports = (bot) => {
             source: data,
         });
     });
-    
+    bot.command('meme', withAsyncResponse, async(ctx) => {
+        const memes = await getMemes(ctx.message.text);
+        memes.forEach(async ({ isImg, src }) => {
+            if (isImg) {
+                await ctx.replyWithPhoto(src);
+            } else {
+                await ctx.replyWithVideo({
+                    source: src,
+                });
+            }
+        });
+        return;
+    });
+
+    // ???
+    bot.command('mus', withAsyncResponse, async (ctx) => ctx.replyWithVoice({
+        source: await getRandSong(),
+    }));
+    bot.command('pol', withAsyncResponse, async(ctx) => ctx.reply(await getPol()));
+
     bot.on('sticker', ctx => ctx.reply(ANSWERS.weird));
     bot.hears(/(hi|Hi|hello|Hello)+/, ctx => ctx.reply(ANSWERS.hi));
     bot.hears(/./, ({ reply, message: m }) => reply(`${m.text} from ${m.chat.first_name}`));

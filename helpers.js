@@ -6,9 +6,9 @@ const YESNO_URL = 'https://yesno.wtf/api';
 const POL_URL = 'https://2ch.hk/po/threads.json';
 const DAD_JOKE_URL = 'https://icanhazdadjoke.com/';
 const ADVICE_URL = 'https://api.adviceslip.com/advice';
+const GAG_MEDIA_HOST = 'img-9gag-fun.9cache.com';
 const HORO_URL = 'http://horoscope-api.herokuapp.com/horoscope';
-const RAND_IMAGE_URL = 'https://source.unsplash.com/collection/3356631/600x800';
-const GAG_SECTIONS = ['comic', 'country', 'nsfw'];
+const GAG_SECTIONS = ['fresh', 'comic', 'nsfw', 'video'];
 const HORO_DATES = ['today', 'week', 'month', 'year'];
 const HORO_SUNSIGNS = ['taurus', 'leo', 'scorpio', 'aquarius', 'gemini', 'virgo',
     'sagittarius', 'pisces', 'aries', 'cancer', 'libra', 'capricorn',
@@ -22,66 +22,69 @@ const ANSWERS = {
 
 axios.defaults.timeout = 5000;
 
-function getRandSong() {
-    return Buffer.alloc(800000);
-}
+async function getMemes(text) {
+    let section = GAG_SECTIONS[0];
+    let search;
+    let count = 1;
+    const memes = [];
 
-async function getRandMeme() {
-    const index = Math.floor(Math.random() * GAG_SECTIONS.length);
-    const res = await axios.get(`${GAG_URL}/${GAG_SECTIONS[index]}/fresh`);
-
-    const $ = cheerio.load(res.data);
-    const result = $('a.badge-track').map((a) => {
-        console.log('kk');
-        console.log($(this));
-        var item = {
-            title: null,
-            id: null,
-            url: null,
-            image: null,
-            points: null,
-            commentCount: null
-        };
-        // item.title = $(this).children('header').children('h2.badge-item-title').children('a').text().trim();
-        // item.id = $(this).attr('data-entry-id');
-        // item.url = "http://9gag.com" + $(this).children('div.badge-post-container').children('a').attr('href');
-        // item.image = $(this).children('div.badge-post-container').children('a').children('img').attr('src');
-        // item.points = $(this).children('p.post-meta').children('a.badge-evt.point').children('span.badge-item-love-count').text().trim();
-        // item.commentCount = $(this).children('p.post-meta').children('a.badge-evt.comment').text().trim();
-        // item.commentCount = item.commentCount.substring(0, item.commentCount.indexOf(' comments'));
-
-        return item;
-    }).get();
-    console.log(result);
-    
-
-    return RAND_IMAGE_URL;
-}
-
-async function getPol() {
-    const res = await axios.get(POL_URL);
-    console.log(res.data.threads);
-    return `
-        ${res.data.threads[0].subject}
-        https://2ch.hk/po/res/${res.data.threads[0].num}.html
-    `;
-}
-
-async function getRandVideo() {
-    const url = 'https://player.vimeo.com/external/272348880.hd.mp4?s=d6216c0238a4166737a37426212eaed6cff3ac09&profile_id=175&oauth2_token_id=57447761&download=4';
-    const res = await axios({
-        url,
-        responseType: 'stream'
+    const optsArr = text.split(' ').slice(1) || [];
+    optsArr.forEach((opt) => {
+        if (isNaN(opt)) {
+            opt = opt.toLowerCase();
+            if (GAG_SECTIONS.includes(opt)) section = opt;
+            else search = opt;
+        } else count = opt;
     });
-    return res.data;
+    const url = `${GAG_URL}/${search ? `search?query=${search}` : section}`;
+
+    try {
+        while (memes.length < count) {
+            let res = await axios.get(url);
+
+            let $ = cheerio.load(res.data, {
+                xmlMode: true,
+            });
+            let rawIds = $('span#jsid-latest-entries').contents().first().text();
+            if (!rawIds) throw new Error();
+            let ids = rawIds.split(',').slice(0, count - memes.length);
+            let raw = $('script:not([src])')[5].children[0].data;
+            if (!raw) throw new Error();
+            ids.forEach(async (id) => {
+                let pattern = new RegExp(`http(s?):\\\\/\\\\/${GAG_MEDIA_HOST}\\\\/photo\\\\/${id}_460s.{1,5}.(?:mp4|webm|gif)`, 'g');
+                let src = raw.match(pattern);
+                if (src && src[0]) {
+
+                    const data = await axios({
+                        url: src[0].replace(/\\\//g, '/'),
+                        responseType: 'stream',
+                    });
+
+                    memes.push({
+                        isImg: false,
+                        src: data.data,
+                    });
+                } else {
+                    memes.push({
+                        isImg: true,
+                        src: `https://${GAG_MEDIA_HOST}/photo/${id}_700b.jpg`,
+                    });
+                }
+            });
+        }
+
+        return memes;
+    } catch (e) {
+        console.log(e);
+        return memes; //
+    }
 }
 
-// should adv horo dad 
 async function getYesNo() {
     try {
         const res = await axios.get(YESNO_URL);
 
-        if (res.data.image) throw new Error();
+        if (!res.data.image) throw new Error();
         const data = await axios({
             url: res.data.image,
             responseType: 'stream'
@@ -93,7 +96,7 @@ async function getYesNo() {
     } catch (e) {
         return {
             isGif: false,
-            data: ['No', 'Yes', 'Maybe..'][Math.floor(Math.random() * 3)],
+            data: ['No.', 'Yes!', 'Maybe..'][Math.floor(Math.random() * 3)],
         };
     }
 }
@@ -159,13 +162,26 @@ async function getHoroscope(text) {
     } 
 }
 
+// ???
+function getRandSong() {
+    return Buffer.alloc(800000);
+}
+
+async function getPol() {
+    const res = await axios.get(POL_URL);
+    console.log(res.data.threads);
+    return `
+        ${res.data.threads[0].subject}
+        https://2ch.hk/po/res/${res.data.threads[0].num}.html
+    `;
+}
+
 module.exports = {
-    getJoke,
-    getAdvice,
     getPol,
+    getJoke,
     getYesNo,
+    getMemes,
+    getAdvice,
     getRandSong,
-    getRandVideo,
-    getRandMeme,
     getHoroscope,
 };
