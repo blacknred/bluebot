@@ -1,2 +1,2 @@
 # Node.js Telegraf (Telegram) bot
-http://t.me/bloobot
+[Bloobot](https://t.me/bloobot)

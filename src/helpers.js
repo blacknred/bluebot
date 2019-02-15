@@ -45,16 +45,31 @@ async function getMemes(text) {
             let $ = cheerio.load(res.data, {
                 xmlMode: true,
             });
-            let rawIds = $('span#jsid-latest-entries').contents().first().text();
-            if (!rawIds) throw new Error();
-            let ids = rawIds.split(',').slice(0, count - memes.length);
+
+            //get posts ids
+            let rawIds = $('span#jsid-latest-entries').contents().first().text() || '';
+            let idArr = rawIds.split(',');
+            if (!idArr.length) throw new Error();
+            let ids = [];
+            if (count < idArr.length) {
+                // get random unique ids
+                while (ids.length < count) {
+                    let _id = idArr[Math.floor(Math.random() * idArr.length)];
+                    if (!ids.includes(_id)) ids.push(_id);
+                }
+            } else {
+                // get all ids
+                ids = ids.concat(idArr.slice(0, count - memes.length));
+            }
+
+            // get posts data & extract rich media urls (webm, mp4, gif as preferable)
             let raw = $('script:not([src])')[5].children[0].data;
             if (!raw) throw new Error();
             ids.forEach(async (id) => {
                 let pattern = new RegExp(`http(s?):\\\\/\\\\/${GAG_MEDIA_HOST}\\\\/photo\\\\/${id}_460s.{1,5}.(?:mp4|webm|gif)`, 'g');
                 let src = raw.match(pattern);
                 if (src && src[0]) {
-
+                    // fetch data for rich media url
                     const data = await axios({
                         url: src[0].replace(/\\\//g, '/'),
                         responseType: 'stream',

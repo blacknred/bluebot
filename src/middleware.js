@@ -87,6 +87,7 @@ module.exports = (bot) => {
         source: await getRandSong(),
     }));
     bot.command('pol', withAsyncResponse, async(ctx) => ctx.reply(await getPol()));
+    // ???
 
     bot.on('sticker', ctx => ctx.reply(ANSWERS.weird));
     bot.hears(/(hi|Hi|hello|Hello)+/, ctx => ctx.reply(ANSWERS.hi));
