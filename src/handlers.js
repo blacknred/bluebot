@@ -46,7 +46,7 @@ const onMeme = async(ctx) => {
     const memes = await getMemes(ctx.message.text);
     memes.forEach(async (meme) => {
         if (meme.isImg) {
-            await ctx.replyWithPhoto(src);
+            await ctx.replyWithPhoto(meme.src);
         } else {
             await ctx.replyWithVideo({
                 source: meme.src,
